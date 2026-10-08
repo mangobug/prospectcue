@@ -34,7 +34,10 @@ export async function POST(request: Request) {
       input.mapping,
       new Set(existing?.map((p) => p.key)),
     );
-    if (input.mode === 'preview') return { rows };
+    // Only invalid source fields are needed for the downloadable feedback.
+    // Do not return unmapped original CSV fields for successfully validated rows.
+    const feedbackRows = rows.map((r) => (r.data ? { ...r, raw: [] } : r));
+    if (input.mode === 'preview') return { rows: feedbackRows };
     const validRows = rows.flatMap((r) =>
       r.data
         ? [
@@ -61,6 +64,6 @@ export async function POST(request: Request) {
         400,
         'Import could not be completed. No rows were saved by this attempt; retry with the same confirmation.',
       );
-    return { batch, rows };
+    return { batch, rows: feedbackRows };
   });
 }

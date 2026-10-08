@@ -210,7 +210,11 @@ test('sign-up, import, editing, persistence, filters, notes, pipeline and worksp
     },
   });
   expect(response.status()).toBe(200);
-  expect((await response.json()).batch.imported_count).toBe(22);
+  const bulkResult = await response.json();
+  expect(bulkResult.batch.imported_count).toBe(22);
+  expect(
+    bulkResult.rows.every((r: { raw: string[] }) => r.raw.length === 0),
+  ).toBe(true);
   await page.goto('/app/prospects?sort=business_name');
   await expect(page.locator('tbody tr')).toHaveCount(20);
   await page.getByRole('link', { name: 'Next', exact: true }).click();
