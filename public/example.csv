@@ -1,0 +1,4 @@
+business_name,industry,website_url,email,phone,city,province,country,website_status,source_reference
+"Fictional Maple & Finch Studio",Retail,https://maple-finch.example,maple@example.com,+1 (519) 555-0101,London,Ontario,Canada,website_present,Fictional sample
+"Fictional Orchard, Tools & Co.",Home services,,orchard@example.com,+44 20 7946 0102,London,Ontario,Canada,unknown,Fictional sample
+Fictional Riverbend Bakery,Food,https://instagram.com/fictional-riverbend,,+1 (519) 555-0103,London,Ontario,Canada,social_only,Fictional sample

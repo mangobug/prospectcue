@@ -1,0 +1,9 @@
+# Cloud runner notes
+
+This runner provides Node, pnpm, Docker and system Chromium. Its home directory is read-only. Keep caches under `/workspace/.cache` with `XDG_DATA_HOME`, `XDG_CACHE_HOME` and `NPM_CONFIG_CACHE`; do not repurpose HOME. Supabase's npm binary installer needs `npm_config_https_proxy` set to the existing HTTPS_PROXY. Do not print these values or disable TLS/checksum checks.
+
+The CLI version and minimal Docker Hub stack are pinned in package.json. The stock daemon uses vfs. Its copy of every PostgreSQL image layer exhausts the 32 GB writable filesystem. `node scripts/flatten-postgres.mjs` is an optional Linux x64 cloud workaround: it verifies the official Crane release checksum, resolves the official PostgreSQL image to an immutable platform digest, verifies/downloads OCI layers through Crane, exports their merged filesystem, then imports it as one Docker layer with the original environment, entrypoint, command, user, workdir and exposed ports. It labels the result with its upstream digest. This changes the local image representation, not its PostgreSQL files. It never changes the daemon configuration and is not used on normal Docker storage drivers.
+
+Run this helper before `pnpm db:start` on a fresh vfs runner. It leaves existing images alone, uses a temporary directory, and removes its temporary downloads. Startup then uses the same Supabase CLI and migrations. Required hosts are the package-manager presets, GitHub release hosts and Docker Hub registry/auth/CDN hosts already in those presets; no application external integrations are contacted.
+
+Each cloud task already runs in isolation. Reuse the checkout; do not create a worktree. Restart local services and the app after snapshot restore; live processes are not retained. Do not reset database volumes during normal startup. Recheck auth and a representative app request after restoration. Saved draft instructions do not establish publication or new-task restoration.

@@ -1,0 +1,2 @@
+-- Intentionally no auth users or customer records here. See pnpm seed:local.
+-- The local-only seed script creates fictional data through real authenticated sessions.

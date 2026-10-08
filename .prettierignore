@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+src/lib/database.types.ts
+.next/
+node_modules/
+test-results/
+playwright-report/
+supabase/.temp/
+.env*
+.local-seed.json
