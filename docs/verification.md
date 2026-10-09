@@ -23,3 +23,29 @@ Direct database tests use normal authenticated sessions from two independently p
 Initial validation caught and fixed optional mapping validation, single-column CSV parser handling, optional list filter types, public-origin checks behind Next's internal bind address, and upload interactivity before hydration. The final browser run used a stable production server.
 
 Hosted Supabase, production SMTP, deployment, new-task snapshot restoration and future audit/discovery/AI/billing providers were not tested or activated. No paid resources were created and no outreach was sent. The repository has one workspace per initial owner, a Toronto timezone, a 30-card-per-stage board and a latest-100 activity display; full records remain stored. Broader assistive-technology and cross-browser testing remain follow-up work.
+
+## Online deployment preparation — 2026-10-08
+
+Added Vercel build configuration using the pinned pnpm version, a browser-only
+deployment guide, and a generated schema-only bootstrap for an empty hosted
+Supabase project. A new versioned migration makes the existing authenticated
+table permissions explicit, avoiding reliance on provider default grants.
+Anonymous table reads now fail with PostgreSQL permission error `42501`; the
+real-session security assertion checks that denial rather than an empty result.
+No product features, local accounts or prospect records were added or migrated
+to a hosting provider.
+
+After applying the permissions migration locally, strict typecheck, lint, all
+21 unit tests, all 15 real-session integration tests and all 3 browser workflows
+passed. The production build passed using the exact pnpm invocation configured
+for Vercel (the cloud runner required a writable npm cache). Database types were
+regenerated and unchanged. The generated bootstrap also completed in a separate
+fresh PostgreSQL database with a schema-only copy of local Supabase Auth: three
+tracked migrations, six RLS-protected application tables and zero prospects.
+A repeat bootstrap was rejected without replacing the schema. That temporary
+validation database was removed; the existing local database was retained.
+
+These are deployment preparation checks, not evidence of a live deployment.
+Vercel account access, hosted Supabase execution, real email delivery and the
+public URL still require the account setup and hosted checklist in
+`docs/deployment.md`.

@@ -67,3 +67,8 @@ Duplicate candidates match whitespace/case-normalized business name **and** city
 Initial accounts own one workspace. Membership schema supports additional members, but invitations and workspace switching are deferred. Workspace timezone is fixed to `America/Toronto` in this milestone. Dates are PostgreSQL `date`, not timestamps. Won/lost prospects are excluded from due follow-ups. Pipeline shows the latest 30 prospects per stage with a link to its paginated list. Activity history displays the latest 100 entries; older entries remain stored. There is no drag-and-drop board, crawling, audit scoring, messaging, AI or billing integration.
 
 See `docs/product.md`, `docs/architecture.md`, `docs/backlog.md` and `docs/verification.md`.
+
+For online access without installing developer tools on your computer, follow
+[`docs/deployment.md`](docs/deployment.md) for the existing Vercel + hosted Supabase
+deployment. It includes a transactional, schema-only SQL bootstrap for a new
+project and an actual hosted signup/import/pipeline verification checklist.

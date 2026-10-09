@@ -189,7 +189,9 @@ describe('real authenticated workspace isolation', () => {
       process.env.TEST_SUPABASE_ANON_KEY!,
       { auth: { persistSession: false } },
     );
-    expect((await anonymous.from('prospects').select()).data).toEqual([]);
+    const anonymousRead = await anonymous.from('prospects').select();
+    expect(anonymousRead.data).toBeNull();
+    expect(anonymousRead.error?.code).toBe('42501');
     expect(
       (
         await anonymous.rpc('create_workspace', {
