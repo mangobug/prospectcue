@@ -13,6 +13,12 @@ with a regional London catalogue; Google needs a server-side key. No account tie
 or pricing affects searching or saving. See `docs/discovery.md` for coverage,
 provider retention boundaries, attribution and hosted rollout.
 
-Internal validation precedes subscriptions. Crawling, audit evidence, automated
-scoring, outreach sending, AI drafts, billing, invitations and drag-and-drop
-remain outside these milestones. No external providers are simulated in the app.
+Website audits add explicit background homepage checks, evidence and private
+screenshots to saved prospects. Optional PageSpeed adds measured mobile lab
+metrics; unavailable checks remain unavailable. Results never change a prospect's
+stage or classification automatically. See `docs/website-audits.md`.
+
+Internal validation precedes subscriptions. Full-site crawling, calibrated
+opportunity scoring, outreach sending, AI drafts, billing, invitations and
+drag-and-drop remain outside these milestones. No external providers are
+simulated in the app.

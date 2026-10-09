@@ -34,6 +34,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_capabilities: {
+        Row: {
+          expires_at: string
+          run_id: string
+          token_hash: string
+        }
+        Insert: {
+          expires_at?: string
+          run_id: string
+          token_hash: string
+        }
+        Update: {
+          expires_at?: string
+          run_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_capabilities_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: true
+            referencedRelation: "audit_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          has_screenshot: boolean
+          id: string
+          prospect_id: string
+          report: Json | null
+          requested_by: string | null
+          requested_url: string
+          started_at: string | null
+          status: string
+          workspace_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          has_screenshot?: boolean
+          id?: string
+          prospect_id: string
+          report?: Json | null
+          requested_by?: string | null
+          requested_url: string
+          started_at?: string | null
+          status?: string
+          workspace_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          has_screenshot?: boolean
+          id?: string
+          prospect_id?: string
+          report?: Json | null
+          requested_by?: string | null
+          requested_url?: string
+          started_at?: string | null
+          status?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_runs_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_runs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discovery_places: {
         Row: {
           address: string
@@ -385,6 +471,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_website_audit: {
+        Args: { capability: string; r: string }
+        Returns: Json
+      }
       create_workspace: { Args: { workspace_name: string }; Returns: string }
       discovery_catalogue_status: { Args: never; Returns: Json }
       duplicate_candidates: {
@@ -398,6 +488,17 @@ export type Database = {
       duplicate_key: {
         Args: { c: string; co: string; n: string; p: string }
         Returns: string
+      }
+      fail_audit_dispatch: { Args: { r: string }; Returns: undefined }
+      finish_website_audit: {
+        Args: {
+          capability: string
+          failure?: string
+          r: string
+          result: Json
+          screenshot: boolean
+        }
+        Returns: boolean
       }
       import_prospects: {
         Args: {
@@ -432,6 +533,10 @@ export type Database = {
       }
       is_member: { Args: { w: string }; Returns: boolean }
       is_owner: { Args: { w: string }; Returns: boolean }
+      queue_website_audit: {
+        Args: { capability_hash: string; p: string; target_url: string }
+        Returns: string
+      }
       save_discovery_prospects: {
         Args: { category?: string; ids: string[]; provider: string; w: string }
         Returns: Json

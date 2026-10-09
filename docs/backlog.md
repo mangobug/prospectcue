@@ -1,6 +1,6 @@
 # Prioritized next milestones
 
-1. Website audit jobs and evidence: workspace-scoped audit schema, safe URL checks, isolated browser workers, durable Trigger.dev jobs, PageSpeed data, private Storage assets, job retry/status tests. This is the recommended next implementation task after internal use of the first milestone.
+1. Verify the new website-audit worker on the hosted deployment, then refine findings using reviewed real examples. Follow docs/website-audits.md. Add scheduled evidence retention/orphan cleanup and administrative deletion support before broad use.
 2. Calibrated scoring and branded reports: evidence-linked scoring, reviewer calibration, versioned calculations, agency branding and accessible reports.
 3. Discovery follow-ups: scheduled additional Overture regions, geographic/radius search, cross-provider entity matching, distributed abuse controls, and Google-reference rendering performance. Initial two-provider discovery is implemented; live Google and hosted rollout need their configuration checks.
 4. AI pitch drafts: replaceable provider, evidence-based prompts, draft persistence, editing, human approval. No automatic outreach.

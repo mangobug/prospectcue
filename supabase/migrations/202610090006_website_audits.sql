@@ -1,0 +1,105 @@
+-- Additive upgrade. No prospect data is deleted. Storage must be enabled.
+create table public.audit_runs (
+ id uuid primary key default gen_random_uuid(),
+ workspace_id uuid not null references public.workspaces(id) on delete cascade,
+ prospect_id uuid not null references public.prospects(id) on delete cascade,
+ requested_by uuid references auth.users(id) on delete set null,
+ requested_url text not null check(length(requested_url)<=2048 and requested_url ~ '^https?://'),
+ status text not null default 'queued' check(status in ('queued','running','completed','failed')),
+ created_at timestamptz not null default now(),
+ started_at timestamptz, completed_at timestamptz,
+ report jsonb check(report is null or (jsonb_typeof(report)='object' and octet_length(report::text)<=64000)),
+ has_screenshot boolean not null default false,
+ error_message text check(length(error_message)<=600)
+);
+create index audit_prospect_history on public.audit_runs(workspace_id,prospect_id,created_at desc);
+create unique index audit_one_active on public.audit_runs(prospect_id) where status in ('queued','running');
+alter table public.audit_runs enable row level security;
+revoke all on public.audit_runs from anon,authenticated;
+grant select on public.audit_runs to authenticated;
+create policy audit_read on public.audit_runs for select to authenticated using(public.is_member(workspace_id));
+
+-- Capabilities are inaccessible through tables. Workers use a random, per-run
+-- token, rather than a service-role key or a user's login/session.
+create table public.audit_capabilities (
+ run_id uuid primary key references public.audit_runs(id) on delete cascade,
+ token_hash text not null check(token_hash ~ '^[a-f0-9]{64}$'),
+ expires_at timestamptz not null default now()+interval '30 minutes'
+);
+alter table public.audit_capabilities enable row level security;
+revoke all on public.audit_capabilities from anon,authenticated;
+
+create function public.queue_website_audit(p uuid, target_url text, capability_hash text) returns uuid
+language plpgsql security definer set search_path='' as $$
+declare w uuid; rid uuid;
+begin
+ select workspace_id into w from public.prospects where id=p;
+ if w is null or auth.uid() is null or not public.is_member(w) then raise exception 'Prospect not found'; end if;
+ if target_url is null or target_url !~ '^https?://' or length(target_url)>2048 or
+ capability_hash is null or capability_hash !~ '^[a-f0-9]{64}$' then raise exception 'Invalid audit request'; end if;
+ perform pg_advisory_xact_lock(hashtextextended(p::text,2));
+ update public.audit_runs set status='failed',completed_at=now(),error_message='The audit timed out. Run a new audit.'
+ where prospect_id=p and status in ('queued','running') and created_at<now()-interval '20 minutes';
+ if exists(select 1 from public.audit_runs where prospect_id=p and status in ('queued','running')) then raise exception 'An audit is already in progress'; end if;
+ insert into public.audit_runs(workspace_id,prospect_id,requested_by,requested_url)
+ values(w,p,auth.uid(),target_url) returning id into rid;
+ insert into public.audit_capabilities(run_id,token_hash) values(rid,capability_hash);
+ return rid;
+end $$;
+
+create function public.claim_website_audit(r uuid, capability text) returns jsonb
+language plpgsql security definer set search_path='' as $$
+declare a public.audit_runs;
+begin
+ if capability is null or capability !~ '^[a-f0-9]{64}$' then raise exception 'Audit access denied'; end if;
+ select ar.* into a from public.audit_runs ar join public.audit_capabilities c on c.run_id=ar.id
+ where ar.id=r and c.token_hash=encode(extensions.digest(capability,'sha256'),'hex') and c.expires_at>now()
+ for update of ar;
+ if a.id is null then raise exception 'Audit access denied'; end if;
+ if a.status in ('completed','failed') then return null; end if;
+ -- A dead worker can be retried after its three-minute lease, not concurrently.
+ if a.status='running' and a.started_at>now()-interval '3 minutes' then raise exception 'Audit already running'; end if;
+ update public.audit_runs set status='running',started_at=now() where id=r;
+ return jsonb_build_object('url',a.requested_url,'workspace',a.workspace_id);
+end $$;
+
+create function public.finish_website_audit(r uuid, capability text, result jsonb, screenshot boolean, failure text default null) returns boolean
+language plpgsql security definer set search_path='' as $$
+begin
+ if capability is null or capability !~ '^[a-f0-9]{64}$' or
+ not exists(select 1 from public.audit_capabilities where run_id=r and expires_at>now()
+ and token_hash=encode(extensions.digest(capability,'sha256'),'hex')) then raise exception 'Audit access denied'; end if;
+ if (failure is null and (result is null or jsonb_typeof(result) is distinct from 'object' or result->>'version' is distinct from '1' or jsonb_typeof(result->'findings') is distinct from 'array'))
+ or (failure is not null and (length(failure)>600 or result is not null)) then raise exception 'Invalid audit result'; end if;
+ update public.audit_runs set status=case when failure is null then 'completed' else 'failed' end,
+ completed_at=now(),report=result,has_screenshot=coalesce(screenshot,false),error_message=failure
+ where id=r and status='running';
+ if not found then return false; end if;
+ delete from public.audit_capabilities where run_id=r;
+ return true;
+end $$;
+
+create function public.fail_audit_dispatch(r uuid) returns void
+language plpgsql security definer set search_path='' as $$
+begin
+ update public.audit_runs set status='failed',completed_at=now(),error_message='Unable to start the audit worker. Try again or contact the workspace owner.'
+ where id=r and status='queued' and public.is_member(workspace_id) and auth.uid() is not null;
+ if found then delete from public.audit_capabilities where run_id=r; end if;
+end $$;
+revoke execute on function public.queue_website_audit(uuid,text,text),public.claim_website_audit(uuid,text),
+ public.finish_website_audit(uuid,text,jsonb,boolean,text),public.fail_audit_dispatch(uuid) from public;
+grant execute on function public.queue_website_audit(uuid,text,text),public.fail_audit_dispatch(uuid) to authenticated;
+grant execute on function public.claim_website_audit(uuid,text),public.finish_website_audit(uuid,text,jsonb,boolean,text) to anon;
+
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+values('audit-evidence','audit-evidence',false,5242880,array['image/png'])
+on conflict(id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
+create policy audit_asset_read on storage.objects for select to authenticated using(
+ bucket_id='audit-evidence' and exists(select 1 from public.audit_runs a where
+ name=a.workspace_id::text||'/'||a.id::text||'/mobile.png' and public.is_member(a.workspace_id)));
+create policy audit_asset_insert on storage.objects for insert to authenticated with check(
+ bucket_id='audit-evidence' and exists(select 1 from public.audit_runs a where
+ name=a.workspace_id::text||'/'||a.id::text||'/mobile.png' and a.status in ('queued','running') and public.is_member(a.workspace_id)));
+create policy audit_asset_delete on storage.objects for delete to authenticated using(
+ bucket_id='audit-evidence' and exists(select 1 from public.audit_runs a where
+ name=a.workspace_id::text||'/'||a.id::text||'/mobile.png' and public.is_member(a.workspace_id)));

@@ -28,3 +28,13 @@ route. Direct Node fetch could not reach Google; a request through that route
 reached the actual Google API and returned its expected missing-key permission
 error. This is connectivity evidence, not a successful listing search. Do not
 copy proxy credentials into files or add this runner-specific setting to Vercel.
+
+Website audits require local Storage (now included in `db:start`) and Chromium.
+Run `pnpm audits:local` after `db:env`; it preserves ignored files and prepares the
+local subprocess mode and encryption secret. Export the existing system Chromium
+path when starting the app. This runner cannot make the direct DNS-pinned public
+website connections used by the worker; do not replace them with an unsafe proxy
+fallback. Controlled-page browser tests and real local Storage/RLS checks are
+available here; successful external audits must be checked on Trigger.dev.
+See docs/website-audits.md for secure hosted settings. Installing the SDK and
+saving environment instructions do not deploy a worker or publish the website.

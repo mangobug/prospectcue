@@ -1,6 +1,6 @@
 # Implemented boundaries
 
-One Next.js App Router application. Server-rendered pages query Supabase with per-request cookie sessions. Client forms call Route Handlers; authentication and workspace settings use Server Actions. The Next proxy uses @supabase/ssr getAll/setAll cookies and validates/refreshes sessions before render. No separate backend, ORM, queues or cache service.
+One Next.js App Router application. Server-rendered pages query Supabase with per-request cookie sessions. Client forms call Route Handlers; authentication and workspace settings use Server Actions. The Next proxy uses @supabase/ssr getAll/setAll cookies and validates/refreshes sessions before render. Explicit website audits run separately in Trigger.dev; there is no separate general backend, ORM or cache service.
 
 - Authentication: app/actions.ts, auth/callback, proxy and lib/supabase/server.ts.
 - Authorization: lib/context.ts resolves the authenticated user's membership, never a browser workspace ID; RLS enforces the same access for direct Supabase requests.
@@ -8,6 +8,7 @@ One Next.js App Router application. Server-rendered pages query Supabase with pe
 - Imports: lib/imports.ts parses/maps/validates; api/imports revalidates on preview and confirmation and uses duplicate_candidates + import_prospects RPCs.
 - Discovery: public and authenticated discovery pages call validated source adapters. Overture uses a shared, bounded public search RPC; saving uses the session workspace and a membership-checked transactional RPC. Google content stays live; only Place IDs and independent workspace fields persist. See docs/discovery.md.
 - Pipeline/activities: prospect mutations and transactional PostgreSQL triggers; note inserts use authenticated clients.
+- Audits: authorized queue RPC creates one active run per prospect; Trigger.dev receives encrypted per-run capabilities. An isolated Playwright worker uses bounded, public-only DNS-pinned HTTP access and optional PageSpeed. Reports and private Storage evidence persist with tenant RLS. See docs/website-audits.md for capability lifecycle, retries and hosted setup.
 - UI: Tailwind, shadcn-compatible locally owned Button/Slot and accessible native forms/tables, lucide icons. components.json records shadcn aliases for future components.
 
 ## Database decisions
@@ -24,12 +25,12 @@ Indexes cover membership, stage, follow-up, creation, activity order and normali
 
 ## Next integration points
 
-| Milestone       | Boundary                                                                                                                                                                                       |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Audits          | Create workspace-scoped audit_runs/results/assets tables. Enqueue Trigger.dev jobs after authorized requests. Use isolated Playwright and PageSpeed; do not add URL fetching to prospect CRUD. |
-| Evidence        | Private Supabase Storage buckets with tenant policies and expiring signed reads. Keep evidence and job status attributable to audit runs.                                                      |
-| Scoring/reports | Versioned scoring models derived from evidence; calibrate with reviewed examples before presenting scores.                                                                                     |
-| Discovery       | Extend existing adapters with additional regional imports, refresh jobs and distributed operational controls; keep account pricing separate.                                                   |
-| AI drafts       | Replaceable provider behind server-only job logic, curated evidence input, saved drafts and human review. No sending.                                                                          |
-| Billing         | Stripe customer/subscription mapping, signature-verified idempotent webhook processing and usage events per workspace.                                                                         |
-| Teams           | Reviewed membership/invitation RPCs and policies; explicit workspace switcher; remove initial one-owner-workspace restriction only with an onboarding retry model.                             |
+| Milestone       | Boundary                                                                                                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Audits          | Extend the implemented homepage snapshot with carefully scoped additional pages and reviewed checks; keep fetching in isolated workers.                            |
+| Evidence        | Add retention/orphan cleanup and administrative workspace deletion through the Storage API; keep the existing private membership-checked reads.                    |
+| Scoring/reports | Versioned scoring models derived from evidence; calibrate with reviewed examples before presenting scores.                                                         |
+| Discovery       | Extend existing adapters with additional regional imports, refresh jobs and distributed operational controls; keep account pricing separate.                       |
+| AI drafts       | Replaceable provider behind server-only job logic, curated evidence input, saved drafts and human review. No sending.                                              |
+| Billing         | Stripe customer/subscription mapping, signature-verified idempotent webhook processing and usage events per workspace.                                             |
+| Teams           | Reviewed membership/invitation RPCs and policies; explicit workspace switcher; remove initial one-owner-workspace restriction only with an onboarding retry model. |

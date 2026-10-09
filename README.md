@@ -8,6 +8,10 @@ Ontario catalogue; Google uses a separate server-side Places API (New) key.
 Anonymous searches show up to five results; signed-in free accounts browse twenty
 per page and save prospects without subscription limits.
 
+Saved prospects support background website audits with explicit findings and
+private screenshot evidence. See [`docs/website-audits.md`](docs/website-audits.md)
+for browser-only Vercel/Supabase/Trigger.dev deployment and local setup.
+
 ## Local development
 
 Prerequisites: Node 24+, pnpm 11.19.0, Docker with the daemon running. Use the checked-in lockfile. The Supabase CLI is pinned to 2.75.0 for compatibility with this cloud runner. ESLint 9 and TypeScript 5.9 match Next's lint plugins' supported peer ranges.
@@ -22,7 +26,7 @@ pnpm dev
 
 App: port 3000. Supabase API: port 54321; PostgreSQL: 54322; local email inbox (Mailpit): 54324. Use `localhost` for the app consistently so PKCE cookies survive email redirects. The existing hosted first milestone is at https://prospectcue.vercel.app; deploying the new feature branch and its database changes is a separate action.
 
-The default stack disables unused Studio, Storage, Realtime, analytics and edge functions. These are not needed for this milestone. The startup command uses Supabase's supported Docker Hub image mirror; the cloud network permits it. Docker's `vfs` driver can consume tens of GB with the layered PostgreSQL image. This runner may need a flattened, digest-verified official image (see `docs/cloud-setup.md`); normal overlay-based Docker installations do not.
+The default stack includes Storage for private audit evidence and disables unused Studio, Realtime, analytics and edge functions. The startup command uses Supabase's supported Docker Hub image mirror; the cloud network permits it. Docker's `vfs` driver can consume tens of GB with the layered PostgreSQL image. This runner may need a flattened, digest-verified official image (see `docs/cloud-setup.md`); normal overlay-based Docker installations do not.
 
 `pnpm db:env` writes ignored, permission-restricted `.env.local` and `.env.test` from **local** CLI status without printing keys and preserves existing files. If you reset/change your local keys, deliberately refresh these files. Never commit them. `GOOGLE_PLACES_API_KEY` is optional for the core workflow and Overture, and required for live Google searches.
 
@@ -48,7 +52,7 @@ Local email confirmation is enabled. Sign up, open the confirmation message in M
 
 For production, configure a real SMTP sender in Supabase, verify its domain, configure the Auth Site URL and allowlisted callback URLs for the deployment origin, and set `APP_URL` accordingly. Set signup and recovery templates to the documented Supabase confirmation URL or the token-hash callback pattern. Register `/auth/callback` and `/auth/callback?next=/reset-password`. Use HTTPS, suitable Supabase email/password rate limits, and production password policies. The permissive email rate limit in `supabase/config.toml` is for **local testing only**. Hosted email delivery is unverified.
 
-The Next proxy refreshes auth cookies, protected pages and APIs validate the user through Supabase Auth, and data is read/written with that user's client. Protected responses are private/no-store. Server Actions use Next's origin protections; JSON mutation routes reject cross-origin browser requests. Submitted website URLs are never fetched.
+The Next proxy refreshes auth cookies, protected pages and APIs validate the user through Supabase Auth, and data is read/written with that user's client. Protected responses are private/no-store. Server Actions use Next's origin protections; JSON mutation routes reject cross-origin browser requests. Prospect CRUD never fetches submitted website URLs; explicit audit requests use an isolated worker with DNS-pinned public-only access.
 
 ## Verification
 
@@ -71,7 +75,7 @@ CSV uploads are UTF-8, comma-delimited, limited to 2 MB and 1,000 logical data r
 
 Duplicate candidates match whitespace/case-normalized business name **and** city, province/state and country. A website or social domain alone never matches. Candidates skip by default; the user may explicitly include a separate record. Imports never overwrite. Import results and prospect inserts commit in one transaction; each confirmation has a UUID retry key, checked against its payload. Database locking serializes imports per workspace. Original uploads are held in memory, never stored on the server; invalid-row fields remain in the results page memory only to support the feedback download and are released on navigation; only batch filename, counts and row outcomes persist. In-flight selections are locked for retry; a browser reload restarts the upload flow.
 
-Initial accounts own one workspace. Membership schema supports additional members, but invitations and workspace switching are deferred. Workspace timezone is fixed to `America/Toronto` in this milestone. Dates are PostgreSQL `date`, not timestamps. Won/lost prospects are excluded from due follow-ups. Pipeline shows the latest 30 prospects per stage with a link to its paginated list. Activity history displays the latest 100 entries; older entries remain stored. There is no drag-and-drop board, crawling, audit scoring, messaging, AI or billing integration.
+Initial accounts own one workspace. Membership schema supports additional members, but invitations and workspace switching are deferred. Workspace timezone is fixed to `America/Toronto`. Dates are PostgreSQL `date`, not timestamps. Won/lost prospects are excluded from due follow-ups. Pipeline shows the latest 30 prospects per stage with a paginated list link. Activity history displays the latest 100 entries; older entries remain stored. Audits inspect one public homepage, not an entire site. There is no drag-and-drop board, invented opportunity scoring, messaging, AI or billing integration.
 
 See `docs/product.md`, `docs/architecture.md`, `docs/backlog.md` and `docs/verification.md`.
 

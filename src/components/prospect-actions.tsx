@@ -26,7 +26,10 @@ export function ProspectActions({ id }: { id: string }) {
       {error && <p role="alert">{error}</p>}
       {confirm ? (
         <div className="notice error" role="alert">
-          <p>Delete this prospect and its activity history permanently?</p>
+          <p>
+            Delete this prospect, audit evidence, and activity history
+            permanently?
+          </p>
           <div className="row">
             <Button variant="destructive" disabled={busy} onClick={remove}>
               Confirm deletion

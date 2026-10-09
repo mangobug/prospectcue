@@ -130,6 +130,11 @@ Repository checks and a green deployment build do not prove hosted email or RLS.
 The local integration/E2E suites deliberately reject hosted administration; do
 not change their environment to point at the live database.
 
+For the website-audit feature branch, also follow
+[`website-audits.md`](website-audits.md): apply its guarded audit upgrade and
+configure/deploy the Trigger.dev worker before enabling online audits. The
+original core bootstrap alone does not install the discovery or audit schemas.
+
 ## Persistence and maintenance
 
 Code is saved on GitHub. Deployments run on Vercel; records live in the hosted

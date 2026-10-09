@@ -34,6 +34,16 @@ export default function Privacy() {
           Provider and hosting services may maintain their own operational logs.
         </p>
         <p>
+          When you request a website audit, an isolated Trigger.dev worker
+          visits the public homepage you specify. Your website address, observed
+          findings, and mobile screenshot are saved privately in Supabase. If
+          configured, Google PageSpeed receives the website address for a
+          separate lab test. Audits do not send your workspace notes or account
+          password to the website. Reports remain until you delete the prospect;
+          administrative account removal also requires the operator to remove
+          its stored images.
+        </p>
+        <p>
           Account and data-removal requests are handled by the operator of this
           instance. Use your agency’s support channel. Self-service account
           deletion is not part of this milestone.

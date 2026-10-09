@@ -1,4 +1,40 @@
 @import 'tailwindcss';
+
+.audit-history {
+  margin-top: 1.5rem;
+}
+.audit-run {
+  border-top: 1px solid var(--border, #dce3e5);
+  padding-top: 1rem;
+  overflow-wrap: anywhere;
+}
+.audit-findings {
+  list-style: none;
+  padding: 0;
+}
+.audit-findings li {
+  border-bottom: 1px solid #e2e8ec;
+  padding: 0.75rem 0;
+}
+.audit-issue {
+  background: #fff2d7;
+  color: #784400;
+}
+.audit-unknown {
+  background: #edf0f4;
+  color: #42516a;
+}
+.audit-pass {
+  background: #e3f5ec;
+  color: #156044;
+}
+.audit-screenshot {
+  width: 390px;
+  max-width: 100%;
+  height: auto;
+  margin-top: 0.75rem;
+  border: 1px solid #cbd5e1;
+}
 .google-maps-attribution {
   font-family: Arial, sans-serif;
   font-style: normal;

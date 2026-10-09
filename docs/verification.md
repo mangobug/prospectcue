@@ -1,5 +1,48 @@
 # Verification record — 2026-10-08
 
+## Website audits — 2026-10-09
+
+`feature/website-audits` adds selected-prospect homepage audits with encrypted
+Trigger.dev jobs, public-only DNS-pinned browser transport, versioned findings,
+optional PageSpeed measurements and private Supabase Storage screenshots.
+
+- Typecheck, lint, production build, **63 unit tests**, **26 real-database
+  integration tests**, and **seven production browser workflows** passed.
+- Real isolated Chromium rendered controlled fictional HTML and captured a
+  390×844 PNG. The actual worker capability, PostgreSQL report persistence,
+  signed Storage upload, ordinary-session download and foreign/anonymous
+  denial were exercised. Controlled website transport was explicit; the report
+  was not a live public-site measurement.
+- Transport tests reject mixed public/private DNS answers, private redirects,
+  non-public IP forms, credential/query URLs, oversized bodies and redirect
+  loops, and confirm socket pinning and absence of forwarded cookies/auth.
+- Real database checks cover inaccessible capability hashes, forbidden direct
+  writes/foreign queue requests, job leasing, duplicate active runs, malformed
+  completion, token erasure, explicit retry and timeout recovery.
+- Browser tests display actual rendered fixture findings and a private image,
+  reject unsafe targets/extra workspace inputs, remove evidence on deletion,
+  and start a real local subprocess which persists its final status across reload.
+  Existing discovery/auth/import/pipeline/recovery flows still pass.
+- The generated transactional **hosted-website-audits-upgrade.sql** was applied
+  in a temporary PostgreSQL database using real Auth/Storage schemas and the
+  five prior application migrations. It preserved a fictional prospect, created
+  the audit schema and migration ledger, forced an existing test evidence bucket
+  private with a 5 MB image limit, and rejected replay without changing records.
+  The temporary database was removed. Local service startup and `audits:local`
+  were also rerun without resetting data or replacing existing configuration.
+
+**Hosted limits:** no Trigger.dev project/key, shared production audit secret,
+PageSpeed key, or hosting administrative connector was available. The cloud
+runner blocks the worker's direct public DNS/HTTP transport. Public-site audits,
+the deployed Trigger.dev worker image, live PageSpeed measurements and hosted
+rollout therefore remain unverified. Installation and local tests are not proof
+of those operations. Follow docs/website-audits.md for browser-only deployment;
+no Node/npm installation is needed on the user's Mac.
+
+Evidence retention/orphan cleanup and administrative workspace deletion through
+the Storage API remain operator responsibilities; database cascades cannot
+remove physical files. These operational limits are documented in the rollout.
+
 ## SQL Editor import correction — 2026-10-09
 
 The original approximately 14 MB Overture script cannot be run through hosted

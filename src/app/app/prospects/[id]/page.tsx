@@ -7,6 +7,8 @@ import { ProspectForm } from '@/components/prospect-form';
 import { NoteForm, ProspectActions } from '@/components/prospect-actions';
 import type { Json } from '@/lib/database.types';
 import { liveGoogleListing } from '@/lib/discovery/display';
+import { WebsiteAudit } from '@/components/website-audit';
+import { auditsConfigured } from '@/lib/audits/dispatch';
 import {
   GoogleAttribution,
   OvertureAttribution,
@@ -122,7 +124,7 @@ export default async function Detail({
               {label(p.website_status)}
               <br />
               <small className="muted">
-                Listing or user supplied · no audit
+                Listing or user supplied · audit findings appear separately
               </small>
             </dd>
             <dt>Email</dt>
@@ -177,6 +179,11 @@ export default async function Detail({
           <h2>Edit prospect &amp; next steps</h2>
           <ProspectForm prospect={p} />
         </section>
+        <WebsiteAudit
+          id={id}
+          website={p.website_url}
+          configured={auditsConfigured()}
+        />
         <section className="card full">
           <h2>Activity history</h2>
           <small className="muted">
@@ -209,7 +216,8 @@ export default async function Detail({
         <section className="card full">
           <h2>Delete prospect</h2>
           <p className="muted">
-            Deleting also removes this prospect’s notes and history.
+            Deleting also removes this prospect’s notes, audit evidence, and
+            history.
           </p>
           <ProspectActions id={id} />
         </section>

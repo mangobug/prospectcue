@@ -5,7 +5,7 @@ const result = spawnSync(
   [
     'start',
     '-x',
-    'realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector',
+    'realtime,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector',
   ],
   {
     env: { ...process.env, SUPABASE_INTERNAL_IMAGE_REGISTRY: 'docker.io' },

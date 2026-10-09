@@ -7,7 +7,7 @@ One strict TypeScript Next.js App Router app, pnpm and the committed lockfile. U
 - Protect every operation with validated auth and workspace membership; RLS remains authoritative. Do not trust browser workspace IDs.
 - Put database changes in new SQL migrations; regenerate database.types.ts with pnpm db:types.
 - Keep inputs in shared Zod schemas; run server validation even for client previews.
-- Never log passwords, tokens, raw imports or prospect contact details. No website fetching in this milestone.
+- Never log passwords, tokens, raw imports or prospect contact details. Website access belongs only in the isolated audit worker, with public-address checks, pinned DNS, bounded responses and no visitor credentials. Prospect CRUD never fetches websites.
 - Optional external providers must not be required for the core workflow.
 - Keep local test/seed administration local-only and configuration files ignored.
 
