@@ -2,7 +2,7 @@
 
 1. Website audit jobs and evidence: workspace-scoped audit schema, safe URL checks, isolated browser workers, durable Trigger.dev jobs, PageSpeed data, private Storage assets, job retry/status tests. This is the recommended next implementation task after internal use of the first milestone.
 2. Calibrated scoring and branded reports: evidence-linked scoring, reviewer calibration, versioned calculations, agency branding and accessible reports.
-3. Licensed business discovery: verify provider usage/retention rights first; adapter, rate limits, provenance, manual review and import reuse.
+3. Discovery follow-ups: scheduled additional Overture regions, geographic/radius search, cross-provider entity matching, distributed abuse controls, and Google-reference rendering performance. Initial two-provider discovery is implemented; live Google and hosted rollout need their configuration checks.
 4. AI pitch drafts: replaceable provider, evidence-based prompts, draft persistence, editing, human approval. No automatic outreach.
 5. Billing and usage metering: Stripe subscriptions, verified webhooks, quotas and usage reconciliation.
 6. Team collaboration: invitations, workspace switching, role policies and audit coverage.

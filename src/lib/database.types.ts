@@ -34,6 +34,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      discovery_places: {
+        Row: {
+          address: string
+          attributions: Json
+          business_name: string
+          categories: string[]
+          city: string
+          country: string
+          id: string
+          imported_at: string
+          industry: string
+          latitude: number
+          longitude: number
+          phone: string | null
+          province: string
+          release: string
+          website_url: string | null
+        }
+        Insert: {
+          address?: string
+          attributions?: Json
+          business_name: string
+          categories?: string[]
+          city?: string
+          country?: string
+          id: string
+          imported_at?: string
+          industry?: string
+          latitude: number
+          longitude: number
+          phone?: string | null
+          province?: string
+          release: string
+          website_url?: string | null
+        }
+        Update: {
+          address?: string
+          attributions?: Json
+          business_name?: string
+          categories?: string[]
+          city?: string
+          country?: string
+          id?: string
+          imported_at?: string
+          industry?: string
+          latitude?: number
+          longitude?: number
+          phone?: string | null
+          province?: string
+          release?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       import_batches: {
         Row: {
           completed_at: string
@@ -183,6 +237,8 @@ export type Database = {
           country: string
           created_at: string
           created_by: string
+          discovery_attributions: Json
+          discovery_id: string | null
           email: string | null
           id: string
           industry: string
@@ -205,6 +261,8 @@ export type Database = {
           country?: string
           created_at?: string
           created_by: string
+          discovery_attributions?: Json
+          discovery_id?: string | null
           email?: string | null
           id?: string
           industry?: string
@@ -227,6 +285,8 @@ export type Database = {
           country?: string
           created_at?: string
           created_by?: string
+          discovery_attributions?: Json
+          discovery_id?: string | null
           email?: string | null
           id?: string
           industry?: string
@@ -326,6 +386,7 @@ export type Database = {
     }
     Functions: {
       create_workspace: { Args: { workspace_name: string }; Returns: string }
+      discovery_catalogue_status: { Args: never; Returns: Json }
       duplicate_candidates: {
         Args: { keys: string[]; w: string }
         Returns: {
@@ -371,6 +432,36 @@ export type Database = {
       }
       is_member: { Args: { w: string }; Returns: boolean }
       is_owner: { Args: { w: string }; Returns: boolean }
+      save_discovery_prospects: {
+        Args: { category?: string; ids: string[]; provider: string; w: string }
+        Returns: Json
+      }
+      search_discovery_places: {
+        Args: { category: string; location: string; page?: number }
+        Returns: {
+          address: string
+          attributions: Json
+          business_name: string
+          categories: string[]
+          city: string
+          country: string
+          id: string
+          imported_at: string
+          industry: string
+          latitude: number
+          longitude: number
+          phone: string | null
+          province: string
+          release: string
+          website_url: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "discovery_places"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       pipeline_stage:

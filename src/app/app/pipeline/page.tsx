@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { workspaceContext } from '@/lib/context';
 import { stages, label } from '@/lib/config';
+import { listingNames } from '@/lib/discovery/display';
+import { GoogleAttribution } from '@/components/discovery-attribution';
 export default async function Pipeline() {
   const { client, workspace } = await workspaceContext();
   const lanes = await Promise.all(
@@ -16,6 +18,7 @@ export default async function Pipeline() {
     ),
   );
   if (lanes.some((l) => l.error)) throw new Error('Pipeline unavailable');
+  const live = await listingNames(lanes.flatMap((l) => l.data || []));
   return (
     <>
       <div className="heading">
@@ -38,11 +41,12 @@ export default async function Pipeline() {
             {lanes[i].data?.map((p) => (
               <article className="card" key={p.id}>
                 <Link href={`/app/prospects/${p.id}`}>
-                  <strong>{p.business_name}</strong>
+                  <strong>{live.get(p.id)?.name || p.business_name}</strong>
                 </Link>
                 <div className="muted">
                   <small>
-                    {p.city || 'No city'} · {p.industry || 'No industry'}
+                    {live.get(p.id)?.address || p.city || 'No city'} ·{' '}
+                    {p.industry || 'No industry'}
                   </small>
                 </div>
                 <small className="muted">
@@ -50,6 +54,11 @@ export default async function Pipeline() {
                     ? `Follow-up ${p.next_follow_up}`
                     : 'No follow-up set'}
                 </small>
+                {live.has(p.id) && (
+                  <GoogleAttribution
+                    contributors={live.get(p.id)!.attributions}
+                  />
+                )}
               </article>
             ))}
             {!lanes[i].count && (

@@ -49,9 +49,14 @@ export default async function Dashboard() {
             Track opportunities. Keep the conversation moving.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/app/prospects/new">+ Add prospect</Link>
-        </Button>
+        <div className="row">
+          <Button asChild>
+            <Link href="/app/discover">Find businesses</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/app/prospects/new">+ Add prospect</Link>
+          </Button>
+        </div>
       </div>
       <section className="stats" aria-label="Prospect counts">
         {[

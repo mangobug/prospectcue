@@ -1,0 +1,2 @@
+# Operator-only regional ingestion; not needed by Next.js or Vercel.
+duckdb==1.4.4

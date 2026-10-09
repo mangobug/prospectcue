@@ -1,6 +1,12 @@
 # Agency Prospect
 
-First milestone for YXU Digital and other digital agencies: email/password authentication → private workspace → manual or CSV prospects → notes and follow-ups → sales pipeline. Product name lives in `src/lib/config.ts`.
+For YXU Digital and other digital agencies: real Overture/Google business discovery → email/password authentication → private workspace → selected, manual or CSV prospects → notes and follow-ups → sales pipeline. Product name lives in `src/lib/config.ts`.
+
+The discovery milestone and browser-only rollout are documented in
+[`docs/discovery.md`](docs/discovery.md). Overture starts with a real London,
+Ontario catalogue; Google uses a separate server-side Places API (New) key.
+Anonymous searches show up to five results; signed-in free accounts browse twenty
+per page and save prospects without subscription limits.
 
 ## Local development
 
@@ -10,14 +16,15 @@ Prerequisites: Node 24+, pnpm 11.19.0, Docker with the daemon running. Use the c
 pnpm install --frozen-lockfile
 pnpm db:start
 pnpm db:env
+pnpm catalogue:local  # optional real London Overture catalogue; requires Python 3
 pnpm dev
 ```
 
-App: port 3000. Supabase API: port 54321; PostgreSQL: 54322; local email inbox (Mailpit): 54324. Use `localhost` for the app consistently so PKCE cookies survive email redirects. No public deployment is configured.
+App: port 3000. Supabase API: port 54321; PostgreSQL: 54322; local email inbox (Mailpit): 54324. Use `localhost` for the app consistently so PKCE cookies survive email redirects. The existing hosted first milestone is at https://prospectcue.vercel.app; deploying the new feature branch and its database changes is a separate action.
 
 The default stack disables unused Studio, Storage, Realtime, analytics and edge functions. These are not needed for this milestone. The startup command uses Supabase's supported Docker Hub image mirror; the cloud network permits it. Docker's `vfs` driver can consume tens of GB with the layered PostgreSQL image. This runner may need a flattened, digest-verified official image (see `docs/cloud-setup.md`); normal overlay-based Docker installations do not.
 
-`pnpm db:env` writes ignored, permission-restricted `.env.local` and `.env.test` from **local** CLI status without printing keys and preserves existing files. If you reset/change your local keys, deliberately refresh these files. Never commit them. No future-provider keys are required.
+`pnpm db:env` writes ignored, permission-restricted `.env.local` and `.env.test` from **local** CLI status without printing keys and preserves existing files. If you reset/change your local keys, deliberately refresh these files. Never commit them. `GOOGLE_PLACES_API_KEY` is optional for the core workflow and Overture, and required for live Google searches.
 
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are public client configuration; database access requires a user session and RLS. `APP_URL` is the server-only canonical app origin used for email redirects. `.env.example` documents the placeholders. No service-role key is used anywhere in the application. `.env.test` holds a **local-only** service key for test account creation and cleanup; test assertions use ordinary signed-in users. Test/seed scripts refuse cloud hosts.
 

@@ -7,9 +7,11 @@ import {
   Columns3,
   Upload,
   Settings,
+  Search,
 } from 'lucide-react';
 const items = [
   ['/app', 'Dashboard', LayoutDashboard],
+  ['/app/discover', 'Find businesses', Search],
   ['/app/prospects', 'Prospects', Users],
   ['/app/pipeline', 'Pipeline', Columns3],
   ['/app/import', 'CSV import', Upload],

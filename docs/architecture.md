@@ -6,6 +6,7 @@ One Next.js App Router application. Server-rendered pages query Supabase with pe
 - Authorization: lib/context.ts resolves the authenticated user's membership, never a browser workspace ID; RLS enforces the same access for direct Supabase requests.
 - Prospect management: api/prospects, server pages and shared lib/validation.ts.
 - Imports: lib/imports.ts parses/maps/validates; api/imports revalidates on preview and confirmation and uses duplicate_candidates + import_prospects RPCs.
+- Discovery: public and authenticated discovery pages call validated source adapters. Overture uses a shared, bounded public search RPC; saving uses the session workspace and a membership-checked transactional RPC. Google content stays live; only Place IDs and independent workspace fields persist. See docs/discovery.md.
 - Pipeline/activities: prospect mutations and transactional PostgreSQL triggers; note inserts use authenticated clients.
 - UI: Tailwind, shadcn-compatible locally owned Button/Slot and accessible native forms/tables, lucide icons. components.json records shadcn aliases for future components.
 
@@ -28,7 +29,7 @@ Indexes cover membership, stage, follow-up, creation, activity order and normali
 | Audits          | Create workspace-scoped audit_runs/results/assets tables. Enqueue Trigger.dev jobs after authorized requests. Use isolated Playwright and PageSpeed; do not add URL fetching to prospect CRUD. |
 | Evidence        | Private Supabase Storage buckets with tenant policies and expiring signed reads. Keep evidence and job status attributable to audit runs.                                                      |
 | Scoring/reports | Versioned scoring models derived from evidence; calibrate with reviewed examples before presenting scores.                                                                                     |
-| Discovery       | Provider adapter with verified licensing, provenance, quotas and workspace-specific import decisions.                                                                                          |
+| Discovery       | Extend existing adapters with additional regional imports, refresh jobs and distributed operational controls; keep account pricing separate.                                                   |
 | AI drafts       | Replaceable provider behind server-only job logic, curated evidence input, saved drafts and human review. No sending.                                                                          |
 | Billing         | Stripe customer/subscription mapping, signature-verified idempotent webhook processing and usage events per workspace.                                                                         |
 | Teams           | Reviewed membership/invitation RPCs and policies; explicit workspace switcher; remove initial one-owner-workspace restriction only with an onboarding retry model.                             |

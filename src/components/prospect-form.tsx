@@ -16,6 +16,16 @@ const fields = [
   ['source_reference', 'Source reference', 500],
 ] as const;
 export function ProspectForm({ prospect }: { prospect?: Tables<'prospects'> }) {
+  const reference = prospect?.source_type === 'google_places';
+  const hiddenFields = [
+    'website_url',
+    'email',
+    'phone',
+    'city',
+    'province',
+    'country',
+    'source_reference',
+  ];
   const router = useRouter();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
@@ -73,31 +83,47 @@ export function ProspectForm({ prospect }: { prospect?: Tables<'prospects'> }) {
         </div>
       )}
       <div className="grid">
-        {fields.map(([name, title, max]) => (
-          <div key={name}>
-            <label htmlFor={`p-${name}`}>
-              {title}
-              {name === 'business_name' ? ' *' : ''}
-            </label>
+        {reference &&
+          hiddenFields.map((name) => (
             <input
+              key={name}
+              type="hidden"
               name={name}
-              id={`p-${name}`}
-              defaultValue={
-                prospect?.[name] ?? (name === 'country' ? 'Canada' : '')
-              }
-              type={name === 'email' ? 'email' : 'text'}
-              maxLength={max}
-              required={name === 'business_name'}
-              placeholder={name === 'website_url' ? 'example.ca' : undefined}
+              value={String(
+                prospect?.[name as keyof Tables<'prospects'>] || '',
+              )}
             />
-          </div>
-        ))}
+          ))}
+        {fields
+          .filter(([name]) => !reference || !hiddenFields.includes(name))
+          .map(([name, title, max]) => (
+            <div key={name}>
+              <label htmlFor={`p-${name}`}>
+                {reference && name === 'business_name'
+                  ? 'Your saved label'
+                  : title}
+                {name === 'business_name' ? ' *' : ''}
+              </label>
+              <input
+                name={name}
+                id={`p-${name}`}
+                defaultValue={
+                  prospect?.[name] ?? (name === 'country' ? 'Canada' : '')
+                }
+                type={name === 'email' ? 'email' : 'text'}
+                maxLength={max}
+                required={name === 'business_name'}
+                placeholder={name === 'website_url' ? 'example.ca' : undefined}
+              />
+            </div>
+          ))}
         <div>
           <label htmlFor="p-website_status">Website classification</label>
           <select
             name="website_status"
             id="p-website_status"
             defaultValue={prospect?.website_status ?? 'unknown'}
+            disabled={reference}
           >
             {websiteStatuses.map((s) => (
               <option key={s} value={s}>

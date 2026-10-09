@@ -1,5 +1,66 @@
 # Verification record — 2026-10-08
 
+## Business-discovery milestone — 2026-10-09
+
+The new `feature/business-discovery` implementation was checked with real local
+Supabase PostgreSQL/Auth/PostgREST and Chromium against the production build.
+Overture results used the actual official `2026-09-23.1` release, not fixtures or
+mocked listings. Google adapter checks use explicitly identified transport
+fixtures; **live Google searches remain unverified because no server API key is
+configured**.
+
+- TypeScript, ESLint and the production build passed.
+- 29 unit tests passed, including strict discovery input/URL validation, signed
+  selection tampering/expiry, Google pagination/headers/no-store behavior,
+  missing-key handling, malformed responses and closed-listing filtering.
+- 22 real-database integration tests passed. New coverage checks anonymous
+  five-result bounds, paging denial, unavailable raw catalogue grants,
+  signed-in paging, immutable provider provenance, trusted-field saving,
+  concurrent retry deduplication, matching manual-record reuse, transactional
+  rollback, Google reference-only storage and independent workspace isolation.
+- Five production browser workflows passed. New coverage uses real Overture
+  searches: anonymous preview and mobile layout, signed-in twenty-result pages,
+  non-overlapping pagination, selection/save/retry, strict mutation validation,
+  prospect opening, notes, persisted stage changes, pipeline display and denial
+  of another workspace's detail page and note API.
+- Official regional extraction produced 17,980 usable public-business records;
+  six explicitly permanently closed records were excluded. The pinned regional
+  archive includes contributor provenance and full source-license texts.
+  `pnpm catalogue:local` passed twice without resetting private prospects.
+- The generated hosted upgrade was applied to a separate temporary PostgreSQL
+  database with the original three-migration schema and fictional existing
+  prospect/note. Both remained intact; all 17,980 catalogue records imported;
+  five migration versions were tracked. An accidental repeat upgrade was
+  rejected. A fresh generated bootstrap separately produced five tracked
+  migrations, seven RLS-enabled public tables and zero workspace prospects.
+  Both temporary verification databases were removed.
+
+The tests were corrected to await the prospect-save confirmation before reload
+and to assert Next.js's streamed not-found UI (which can return HTTP 200), while
+the unauthorized mutation API is required to return 404. No authorization
+assertions or failing features were disabled to make the suite pass.
+
+The restricted runner could not download DuckDB's extension from its normal
+host. Extraction used a version-matched, checksum-checked PyPI redistribution
+whose embedded signature was accepted by DuckDB with unsigned extensions
+disabled. This limitation does not affect normal startup from the committed
+regional catalogue archive.
+
+The feature has **not** been deployed to the existing Vercel production domain,
+and the new migrations/catalogue have **not** been applied to hosted Supabase.
+Hosted Google credentials, API billing/quotas, both hosted discovery flows and
+fresh-task environment snapshot restoration remain outside the verified
+evidence. See `docs/discovery.md` for the concrete browser-only rollout.
+
+Cloud Node requests require `NODE_USE_ENV_PROXY=1`. The configured proxy route
+reached Google's real API and returned `PERMISSION_DENIED` for an unregistered
+caller with no key. Provider connectivity was established; authenticated Google
+retrieval remains untested. Startup instructions preserve this runtime setting.
+The local production server was restarted after the final rebuild before the
+final browser verification, preventing reuse of old build modules/chunk paths.
+
+## Original first milestone
+
 Verified in this cloud instance using real local Supabase PostgreSQL 17/Auth/PostgREST and system Chromium, with the production Next.js server. No mocked sessions or database results were used to establish tenant isolation.
 
 | Check                                               | Result                                                                                                  |

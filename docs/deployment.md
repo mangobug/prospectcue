@@ -1,5 +1,11 @@
 # Browser-only deployment: Vercel + Supabase
 
+For the new **two-provider business-discovery milestone**, use
+[`docs/discovery.md`](discovery.md). An existing project needs the guarded
+discovery upgrade and regional catalogue, rather than rerunning the bootstrap.
+The feature is on `feature/business-discovery`; the guide below remains the
+first-milestone deployment procedure.
+
 This deploys the existing milestone without installing Node, npm or Docker on
 your Mac. Vercel runs Next.js; a separate hosted Supabase project persists the
 accounts, workspaces, prospects and activity records. No local database or seed

@@ -6,6 +6,11 @@ import { label } from '@/lib/config';
 import { ProspectForm } from '@/components/prospect-form';
 import { NoteForm, ProspectActions } from '@/components/prospect-actions';
 import type { Json } from '@/lib/database.types';
+import { liveGoogleListing } from '@/lib/discovery/display';
+import {
+  GoogleAttribution,
+  OvertureAttribution,
+} from '@/components/discovery-attribution';
 function changeText(type: string, data: Json) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return '';
   return `${type === 'stage_change' ? 'Stage' : 'Follow-up'}: ${String(data.from ?? 'Not set')} → ${String(data.to ?? 'Not set')}`;
@@ -26,6 +31,10 @@ export default async function Detail({
     .maybeSingle();
   if (error) throw new Error('Prospect unavailable');
   if (!p) notFound();
+  const live =
+    p.source_type === 'google_places' && p.discovery_id
+      ? await liveGoogleListing(p.discovery_id)
+      : null;
   const { data: activities, error: activityError } = await client
     .from('prospect_activities')
     .select('*')
@@ -40,17 +49,57 @@ export default async function Detail({
       <div className="heading">
         <div>
           <div className="eyebrow">Prospects / Detail</div>
-          <h1>{p.business_name}</h1>
+          <h1>{live?.name || p.business_name}</h1>
           <div className="row">
             <span className={`badge badge-${p.stage}`}>{label(p.stage)}</span>
             <span className="muted">
-              {[p.city, p.province, p.country].filter(Boolean).join(', ')}
+              {live?.address ||
+                [p.city, p.province, p.country].filter(Boolean).join(', ')}
             </span>
           </div>
         </div>
         <Link href="/app/prospects">Back to prospects →</Link>
       </div>
       <div className="grid">
+        {p.source_type === 'google_places' && (
+          <section className="card full">
+            <h2>Live Google listing</h2>
+            {live ? (
+              <>
+                <p>{live.address}</p>
+                <div className="row">
+                  {live.website && (
+                    <a
+                      href={live.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Website listed ↗
+                    </a>
+                  )}
+                  <span>{live.phone || 'Phone not listed'}</span>
+                  <a
+                    href={live.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View on Google Maps ↗
+                  </a>
+                </div>
+                <GoogleAttribution contributors={live.attributions} />
+              </>
+            ) : (
+              <p>
+                Live listing details are unavailable right now. Your saved
+                reference, notes, stage, and follow-up remain available.
+              </p>
+            )}
+            <small className="muted">
+              Google details are fetched live and are not stored in your
+              prospect record. Your saved label is {p.business_name}.
+            </small>
+          </section>
+        )}
         <section className="card">
           <h2>Business information</h2>
           <dl>
@@ -72,7 +121,9 @@ export default async function Detail({
             <dd>
               {label(p.website_status)}
               <br />
-              <small className="muted">User supplied · no audit</small>
+              <small className="muted">
+                Listing or user supplied · no audit
+              </small>
             </dd>
             <dt>Email</dt>
             <dd>{p.email || '—'}</dd>
@@ -84,6 +135,21 @@ export default async function Detail({
             <dd>
               {label(p.source_type)}
               {p.source_reference && <p>{p.source_reference}</p>}
+              {p.source_type === 'overture' && (
+                <OvertureAttribution
+                  contributors={
+                    Array.isArray(p.discovery_attributions)
+                      ? p.discovery_attributions.filter(
+                          (a): a is { name: string } =>
+                            !!a &&
+                            typeof a === 'object' &&
+                            'name' in a &&
+                            typeof a.name === 'string',
+                        )
+                      : []
+                  }
+                />
+              )}
             </dd>
             <dt>Verification</dt>
             <dd>

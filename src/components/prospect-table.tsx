@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { label } from '@/lib/config';
 import type { Tables } from '@/lib/database.types';
-export function ProspectTable({
+import { listingNames } from '@/lib/discovery/display';
+import { GoogleAttribution } from './discovery-attribution';
+export async function ProspectTable({
   rows,
   emptyMessage,
 }: {
@@ -15,8 +17,10 @@ export function ProspectTable({
     | 'website_status'
     | 'stage'
     | 'next_follow_up'
-  >[];
+  >[] &
+    Partial<Pick<Tables<'prospects'>, 'source_type' | 'discovery_id'>>[];
 }) {
+  const live = await listingNames(rows);
   return rows.length ? (
     <div className="table-wrap">
       <table>
@@ -33,13 +37,20 @@ export function ProspectTable({
           {rows.map((p) => (
             <tr key={p.id}>
               <td>
-                <Link href={`/app/prospects/${p.id}`}>{p.business_name}</Link>
+                <Link href={`/app/prospects/${p.id}`}>
+                  {live.get(p.id)?.name || p.business_name}
+                </Link>
                 <br />
                 <small className="muted">
                   {p.industry || 'No industry set'}
                 </small>
+                {live.has(p.id) && (
+                  <GoogleAttribution
+                    contributors={live.get(p.id)!.attributions}
+                  />
+                )}
               </td>
-              <td>{p.city || '—'}</td>
+              <td>{live.get(p.id)?.address || p.city || '—'}</td>
               <td>
                 <span className="badge">{label(p.website_status)}</span>
               </td>
@@ -61,7 +72,10 @@ export function ProspectTable({
       ) : (
         <>
           <h3>No prospects here yet</h3>
-          <p>Add a business manually or import your first CSV.</p>
+          <p>
+            <Link href="/app/discover">Find businesses →</Link>, add one
+            manually, or import your first CSV.
+          </p>
           <Link href="/app/prospects/new">Add your first prospect →</Link>
         </>
       )}

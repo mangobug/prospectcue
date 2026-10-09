@@ -19,6 +19,7 @@
     "db:env": "node scripts/local-env.mjs",
     "seed:local": "node scripts/seed-local.mjs",
     "db:migrate": "supabase migration up --local",
+    "catalogue:local": "node scripts/import-local-overture.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {
