@@ -181,7 +181,7 @@ const licenses = ['CDLA-Permissive-2.0.txt', 'Apache-2.0.txt']
   .map((name) =>
     readFileSync(new URL(`../docs/licenses/${name}`, import.meta.url), 'utf8')
       .split('\n')
-      .map((line) => `-- ${line}`)
+      .map((line) => `-- ${line}`.trimEnd())
       .join('\n'),
   )
   .join('\n--\n');

@@ -6,10 +6,10 @@ The original approximately 14 MB Overture script cannot be run through hosted
 Supabase SQL Editor. Supabase Studio's execute-SQL mutation checks query bytes
 against `0.98 * MB` before issuing its request. The browser-only rollout now uses
 a separately bundled set of **22 numbered transactions**, each below 700,000
-bytes (largest 698,661). The full single-script archive remains a direct
+bytes (largest 698,676). The full single-script archive remains a direct
 PostgreSQL/psql import option, and its embedded README was corrected.
 
-The separate `001-dentists.sql` is 235,095 bytes and loads 282 dental-related
+The separate `001-dentists.sql` is 235,044 bytes and loads 282 dental-related
 regional listings. In an empty temporary PostgreSQL database with the actual
 application schema, this first file made the default anonymous London dentist
 search return five real results. All 22 files from the actual new archive were
