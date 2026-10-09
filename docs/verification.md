@@ -1,5 +1,34 @@
 # Verification record — 2026-10-08
 
+## SQL Editor import correction — 2026-10-09
+
+The original approximately 14 MB Overture script cannot be run through hosted
+Supabase SQL Editor. Supabase Studio's execute-SQL mutation checks query bytes
+against `0.98 * MB` before issuing its request. The browser-only rollout now uses
+a separately bundled set of **22 numbered transactions**, each below 700,000
+bytes (largest 698,661). The full single-script archive remains a direct
+PostgreSQL/psql import option, and its embedded README was corrected.
+
+The separate `001-dentists.sql` is 235,095 bytes and loads 282 dental-related
+regional listings. In an empty temporary PostgreSQL database with the actual
+application schema, this first file made the default anonymous London dentist
+search return five real results. All 22 files from the actual new archive were
+then applied in order, producing 17,980 records. A normalized whole-catalogue
+checksum excluding import timestamps matched the original full import exactly.
+Replaying the final batch did not add duplicates; an existing fictional private
+prospect and note remained intact. The temporary database was removed.
+
+The exporter now supports an optional new/empty SQL Editor directory, preserves
+license notices and source metadata in every file, computes UTF-8 byte bounds,
+and writes a size/count manifest. A CLI regression exercises multibyte text,
+apostrophes, complete unique coverage, first-batch prioritization, final-batch
+closed-record cleanup and rejection of non-empty export directories.
+
+Typecheck, lint, 30 unit tests, 22 real-database tests, five browser workflows and
+the production build passed. These checks used local services; no hosted database
+import was performed by the agent. Users can resume a partial import at the next
+file; the 22-file region is intentionally not one atomic transaction.
+
 ## Business-discovery milestone — 2026-10-09
 
 The new `feature/business-discovery` implementation was checked with real local

@@ -39,14 +39,19 @@ deploy the feature or update hosted Supabase.
    accidental repeat execution. A statement failure rolls back the transaction.
    Do not run `hosted-bootstrap.sql` over this existing project or reset it.
 2. On GitHub, download
-   [`supabase/catalogue/london-overture-2026-09-23.1.zip`](../supabase/catalogue/london-overture-2026-09-23.1.zip)
+   [`supabase/catalogue/london-overture-sql-editor-2026-09-23.1.zip`](../supabase/catalogue/london-overture-sql-editor-2026-09-23.1.zip)
    using **Download raw file**. macOS can unzip it without Node or npm. Open
-   `overture-london.sql` in a text editor and run the **entire** SQL in Supabase
-   SQL Editor. The approximately 14 MB SQL transaction populates the shared
-   catalogue; it does not create workspace prospects. The archive also includes
-   source notices and license texts. It is repeatable. If the editor rejects its
-   size, have an operator run it using PostgreSQL/psql; do not partially paste
-   individual insert statements or disable RLS.
+   `001-dentists.sql` in a text editor, copy **all** its contents, paste into a new
+   Supabase SQL Editor query, and run it. Wait for success. Repeat with files
+   `002-places.sql` through `022-places.sql`, replacing the editor contents each
+   time. Each file is below 700 KB and commits independently; rerunning a file
+   does not duplicate listings. The first loads the dental-related listings so
+   you can test dentists in London immediately; all 22 load the full regional
+   catalogue. No workspace prospects are created by these imports. Preserve the
+   archive's source notices and license texts. Keep RLS enabled. The original
+   approximately 14 MB single-script archive is for direct PostgreSQL/psql
+   import and **cannot be run in SQL Editor**. If the discovery upgrade in step
+   1 was already applied, do not rerun it; only import the catalogue files.
 3. In [Google Cloud Console](https://console.cloud.google.com/), create/select
    your project, attach a billing account if required by Google, enable **Places
    API (New)**, and create a separate server API key restricted to that API. This
@@ -104,7 +109,7 @@ python3 -m venv /workspace/.cache/overture-tools
 /workspace/.cache/overture-tools/bin/python scripts/fetch-overture.py \
   --release 2026-09-23.1 --bbox=-81.46,42.88,-81.05,43.10 \
   --output .data/overture-london.ndjson
-node scripts/prepare-overture.mjs .data/overture-london.ndjson .data/overture-london.sql 2026-09-23.1
+node scripts/prepare-overture.mjs .data/overture-london.ndjson .data/overture-london.sql 2026-09-23.1 .data/new-sql-editor-parts
 ```
 
 The helper uses fixed official public S3 endpoints, unsigned public-bucket reads,
@@ -115,6 +120,13 @@ license notices, and prepares an atomic SQL upsert. Explicitly closed IDs are
 removed from discovery; previously saved prospects retain their provenance.
 Missing listings are not automatically deleted, and refreshes do not overwrite
 workspace prospects. Scheduling ongoing regional refreshes is deferred.
+
+The optional fourth argument creates byte-bounded, independently committed
+SQL Editor files, prioritizing dental-related listings, plus a record-count/size
+manifest. Use a new or empty directory so stale files from another release
+cannot enter the import. These files are resumable and individually idempotent;
+the complete region is not one atomic transaction across files. The standalone
+full SQL remains available for an atomic direct PostgreSQL import.
 
 DuckDB's `httpfs` extension normally installs from its official extension host.
 That host returned 403 in this runner. The successful regional extraction used
