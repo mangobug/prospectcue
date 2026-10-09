@@ -47,10 +47,13 @@ database reset.
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Hosted public publishable or legacy anon key                                                         |
    | `APP_URL`                       | Your stable Vercel HTTPS domain, such as `https://YOUR_PROJECT.vercel.app`, without a trailing slash |
 
-6. Deploy. Confirm the stable domain under the project's **Domains** settings.
-   If it differs from the initial `APP_URL`, correct the variable and **Redeploy**
-   before signing up or saving anything. Environment changes do not update an
-   already-built deployment; the public Supabase values are embedded at build time.
+6. If Vercel has not assigned the stable domain yet, deploy initially with just
+   the two Supabase variables. Confirm the stable domain under the project's
+   **Domains** settings, then add `APP_URL` with that exact HTTPS origin and
+   **Redeploy** before signing up or saving anything. If you already supplied an
+   `APP_URL`, verify it matches and correct/redeploy if needed. Environment changes
+   do not update an already-built deployment; public Supabase values are embedded
+   at build time.
 7. Visit the stable Production domain. Use that same hostname throughout signup
    and email confirmation. Preview deployment hostnames are not configured by this
    procedure and must not be used for the review.
