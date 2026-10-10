@@ -11,11 +11,11 @@ export async function runWebsiteAudit(sealed: string) {
   const client = createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await client.rpc('claim_website_audit', {
+  const { data, error, status } = await client.rpc('claim_website_audit', {
     r: packet.runId,
     capability: packet.token,
   });
-  if (error) throw auditDatabaseError('claim', error);
+  if (error) throw auditDatabaseError('claim', error, status);
   if (!data) return; // A completed/failed run is never executed twice.
   if (
     typeof data !== 'object' ||
@@ -40,7 +40,8 @@ export async function runWebsiteAudit(sealed: string) {
       result: report as unknown as Json,
       screenshot: !upload.error,
     });
-    if (finished.error) throw auditDatabaseError('result', finished.error);
+    if (finished.error)
+      throw auditDatabaseError('result', finished.error, finished.status);
   } catch {
     // Provider/browser errors may contain URLs, headers, or tokens. Persist only a safe explanation.
     const failure = await client.rpc('finish_website_audit', {
@@ -51,6 +52,7 @@ export async function runWebsiteAudit(sealed: string) {
       failure:
         'The website could not be audited safely. It may be unreachable, block automated visits, redirect to a private address, or exceed the loading budget. Check the website manually or run a new audit.',
     });
-    if (failure.error) throw auditDatabaseError('status', failure.error);
+    if (failure.error)
+      throw auditDatabaseError('status', failure.error, failure.status);
   }
 }

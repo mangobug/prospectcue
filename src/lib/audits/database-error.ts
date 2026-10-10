@@ -5,8 +5,18 @@ type DatabaseFailure = { code?: string; message?: string };
 export function auditDatabaseError(
   operation: 'claim' | 'result' | 'status',
   failure: DatabaseFailure,
+  httpStatus?: number,
 ) {
   let explanation = 'Unknown database error. Check Supabase API logs.';
+  if (httpStatus === 401 || httpStatus === 403)
+    explanation =
+      'Supabase rejected the worker API request. Check the public anon/publishable key and project API access settings.';
+  else if (httpStatus === 404)
+    explanation =
+      'Supabase API endpoint not found. Check that the worker uses the project API URL, without a dashboard or REST path.';
+  else if (httpStatus === 0)
+    explanation =
+      'The worker did not receive a usable Supabase response. Check the URL, network access and API key formatting.';
   switch (failure.code) {
     case 'PGRST202':
       explanation =
@@ -45,5 +55,27 @@ export function auditDatabaseError(
   else if (failure.message === 'TypeError: fetch failed')
     explanation =
       'Worker could not connect to Supabase. Check the Supabase URL and project availability.';
-  return new Error(`Audit ${operation} failed: ${explanation}`);
+  else if (
+    failure.message?.includes('invalid header value') ||
+    failure.message?.includes('not a valid HTTP header value')
+  )
+    explanation =
+      'Worker API key contains invalid HTTP header characters. Copy the public key again without line breaks or quotes.';
+
+  const diagnostics: string[] = [];
+  if (
+    typeof httpStatus === 'number' &&
+    Number.isInteger(httpStatus) &&
+    (httpStatus === 0 || (httpStatus >= 100 && httpStatus <= 599))
+  )
+    diagnostics.push(`HTTP ${httpStatus}`);
+  // SQLSTATE and PostgREST codes are safe identifiers. Arbitrary provider fields
+  // are still excluded, including nonstandard codes and all details/hints.
+  if (
+    typeof failure.code === 'string' &&
+    /^(?:[A-Z0-9]{5}|PGRST[0-9]{3})$/.test(failure.code)
+  )
+    diagnostics.push(`database code ${failure.code}`);
+  const suffix = diagnostics.length ? ` [${diagnostics.join('; ')}]` : '';
+  return new Error(`Audit ${operation} failed: ${explanation}${suffix}`);
 }

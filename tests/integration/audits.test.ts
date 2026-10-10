@@ -63,6 +63,9 @@ describe('real audit database, browser and storage isolation', () => {
     expect((failure as Error).message).toContain(
       'Audit authorization missing or expired',
     );
+    expect((failure as Error).message).toContain(
+      '[HTTP 400; database code P0001]',
+    );
     expect((failure as Error).stack).not.toContain(rejectedToken);
     expect(
       (

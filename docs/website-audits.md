@@ -102,8 +102,9 @@ The worker decrypted the job but could not claim it through Supabase. Confirm
 that the worker's Production Supabase URL and public anon/publishable key belong
 to the same project used by Vercel. Never substitute a service-role key.
 
-Worker errors classify known database failures without printing provider
-messages, signed URLs or capabilities. Open the failed attempt in Trigger.dev
+Worker errors classify known database failures and include the HTTP status and
+validated SQLSTATE/PostgREST code without printing provider messages, signed
+URLs or capabilities. Open the failed attempt in Trigger.dev
 and read its error. To check installed functions and permissions, run the
 read-only [`supabase/diagnose-website-audits.sql`](../supabase/diagnose-website-audits.sql)
 in the hosted Supabase SQL Editor. It returns all installation and permission
