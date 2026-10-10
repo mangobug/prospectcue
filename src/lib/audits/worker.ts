@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database, Json } from '../database.types';
 import { openPacket } from './packet';
 import { inspectWebsite } from './browser';
+import { auditDatabaseError } from './database-error';
 export async function runWebsiteAudit(sealed: string) {
   const packet = openPacket(sealed);
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,7 +15,7 @@ export async function runWebsiteAudit(sealed: string) {
     r: packet.runId,
     capability: packet.token,
   });
-  if (error) throw new Error('Audit claim failed');
+  if (error) throw auditDatabaseError('claim', error);
   if (!data) return; // A completed/failed run is never executed twice.
   if (
     typeof data !== 'object' ||
@@ -39,7 +40,7 @@ export async function runWebsiteAudit(sealed: string) {
       result: report as unknown as Json,
       screenshot: !upload.error,
     });
-    if (finished.error) throw new Error('Audit result could not be saved');
+    if (finished.error) throw auditDatabaseError('result', finished.error);
   } catch {
     // Provider/browser errors may contain URLs, headers, or tokens. Persist only a safe explanation.
     const failure = await client.rpc('finish_website_audit', {
@@ -50,6 +51,6 @@ export async function runWebsiteAudit(sealed: string) {
       failure:
         'The website could not be audited safely. It may be unreachable, block automated visits, redirect to a private address, or exceed the loading budget. Check the website manually or run a new audit.',
     });
-    if (failure.error) throw new Error('Audit status could not be saved');
+    if (failure.error) throw auditDatabaseError('status', failure.error);
   }
 }

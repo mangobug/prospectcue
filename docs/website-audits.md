@@ -96,6 +96,26 @@ administrative access to your Vercel, Supabase or Trigger.dev accounts.
    task is deployed; after the 20-minute timeout, start a fresh audit in the app.
    Hosted verification remains required after setup.
 
+### A deployed worker reports `Audit claim failed`
+
+The worker decrypted the job but could not claim it through Supabase. Confirm
+that the worker's Production Supabase URL and public anon/publishable key belong
+to the same project used by Vercel. Never substitute a service-role key.
+
+Worker errors classify known database failures without printing provider
+messages, signed URLs or capabilities. Open the failed attempt in Trigger.dev
+and read its error. To check installed functions and permissions, run the
+read-only [`supabase/diagnose-website-audits.sql`](../supabase/diagnose-website-audits.sql)
+in the hosted Supabase SQL Editor. It returns installation and permission flags
+and the pgcrypto schema; it does not return prospect data or secrets. All flags
+should be true, both worker functions should use owner permissions and be
+executable by `anon`, and pgcrypto should be in `extensions`.
+
+Do not rerun the full audit upgrade over existing tables. If a fresh audit fails,
+use its classified error and these diagnostic results to determine the repair.
+Old run authorization expires after 30 minutes; start a fresh audit from the app
+instead of replaying an expired job in Trigger.dev.
+
 ### Optional PageSpeed
 
 In Google Cloud Console, enable **PageSpeed Insights API** and create a server

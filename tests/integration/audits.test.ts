@@ -43,6 +43,38 @@ function anon() {
   );
 }
 describe('real audit database, browser and storage isolation', () => {
+  it('classifies a rejected real worker claim without exposing its capability', async () => {
+    const a = await setup();
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', process.env.TEST_SUPABASE_URL!);
+    vi.stubEnv(
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+      process.env.TEST_SUPABASE_ANON_KEY!,
+    );
+    const rejectedToken = (a.token[0] === 'a' ? 'b' : 'a') + a.token.slice(1);
+    const failure = await runWebsiteAudit(
+      sealPacket({
+        runId: a.run,
+        token: rejectedToken,
+        assetPath: `${a.workspace}/${a.run}/mobile.png`,
+        uploadToken: 'fictional-upload-token',
+      }),
+    ).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(Error);
+    expect((failure as Error).message).toContain(
+      'Audit authorization missing or expired',
+    );
+    expect((failure as Error).stack).not.toContain(rejectedToken);
+    expect(
+      (
+        await a.client
+          .from('audit_runs')
+          .select('status')
+          .eq('id', a.run)
+          .single()
+      ).data?.status,
+    ).toBe('queued');
+  });
+
   it('isolates audit history, capabilities and direct writes from other tenants', async () => {
     const a = await setup(),
       b = await makeUser();
