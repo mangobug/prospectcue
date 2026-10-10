@@ -53,14 +53,19 @@ administrative access to your Vercel, Supabase or Trigger.dev accounts.
    Leave `AUDIT_LOCAL_WORKER` unset and do not set a local Chromium path. The
    checked-in Playwright build extension installs Chromium and its dependencies.
 
-4. **Connect GitHub in Trigger.dev project settings.** Install its GitHub app for
+4. **Connect GitHub in Trigger.dev → Manage → Integrations → Git settings.**
+   Select the **Production** environment. Install its GitHub app for
    `mangobug/prospectcue`, connect that repository, and set the **Production
    tracking branch** to **`feature/website-audits`**, config file
    `trigger.config.ts`. If an install-command override is needed, use
    `corepack enable && pnpm install --frozen-lockfile`. Configure the build-time
    project reference before deploying. Wait for a successful deployment and
-   confirm the task **`website-audit`** is listed. Use the dashboard deploy or
-   redeploy action if connecting the branch does not initiate a build. Follow
+   confirm the task **`website-audit`** is listed. A connected repository with
+   **Waiting for tasks to deploy** is not a successful worker deployment.
+   GitHub deployment starts on a new push to the tracking branch; if connecting
+   the repository does not start a build, use the dashboard deployment action
+   when available or push a reviewed change to this feature branch. Check the
+   full branch name, including the final **s**, before pushing. Follow
    [Trigger.dev's GitHub integration](https://trigger.dev/docs/github-integration);
    no GitHub Actions workflow or local CLI is required.
 5. **Set Vercel → Project → Settings → Environment Variables** for the
@@ -83,7 +88,13 @@ administrative access to your Vercel, Supabase or Trigger.dev accounts.
    access the prospect, report API or screenshot URL. Blocked/unreachable sites
    may legitimately fail; failure is saved and can be retried. After a 20-minute
    timeout a new audit is allowed. Check Trigger.dev Runs and environment settings
-   if jobs stay queued. Hosted verification remains required after setup.
+   if jobs stay queued. **Pending version** in Trigger.dev means the receiving
+   environment does not have a runnable version containing the task and queue;
+   check **Production → Deploys** for a successful deployment containing
+   `website-audit`. The Vercel API key must belong to that same Trigger.dev
+   project and environment. An unexpired pending run starts after the missing
+   task is deployed; after the 20-minute timeout, start a fresh audit in the app.
+   Hosted verification remains required after setup.
 
 ### Optional PageSpeed
 
