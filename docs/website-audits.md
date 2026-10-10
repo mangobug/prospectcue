@@ -106,8 +106,9 @@ Worker errors classify known database failures without printing provider
 messages, signed URLs or capabilities. Open the failed attempt in Trigger.dev
 and read its error. To check installed functions and permissions, run the
 read-only [`supabase/diagnose-website-audits.sql`](../supabase/diagnose-website-audits.sql)
-in the hosted Supabase SQL Editor. It returns installation and permission flags
-and the pgcrypto schema; it does not return prospect data or secrets. All flags
+in the hosted Supabase SQL Editor. It returns all installation and permission
+checks plus the pgcrypto schema in a single result table; it does not return
+prospect data or secrets. All flags
 should be true, both worker functions should use owner permissions and be
 executable by `anon`, and pgcrypto should be in `extensions`.
 
